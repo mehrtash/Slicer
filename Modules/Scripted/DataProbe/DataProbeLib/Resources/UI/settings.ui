@@ -255,13 +255,13 @@
       </widget>
      </item>
      <item>
-      <widget class="ctkCollapsibleButton" name="scalingRulerCollapsibleButton" native="true">
+      <widget class="ctkCollapsibleButton" name="rulerCollapsibleButton" native="true">
        <property name="text" stdset="0">
-        <string>Scaling Ruler</string>
+        <string>Ruler</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QCheckBox" name="showScalingRulerCheckBox">
+         <widget class="QCheckBox" name="showRulerCheckBox">
           <property name="text">
            <string>Enable</string>
           </property>
@@ -271,20 +271,20 @@
       </widget>
      </item>
      <item>
-      <widget class="ctkCollapsibleButton" name="colorScalarBarCollapsibleButton" native="true">
+      <widget class="ctkCollapsibleButton" name="scalarBarCollapsibleButton" native="true">
        <property name="text" stdset="0">
-        <string>Color Scalar Bar</string>
+        <string>Scalar Bar</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QCheckBox" name="showColorScalarBarCheckBox">
+         <widget class="QCheckBox" name="showScalarBarCheckBox">
           <property name="text">
            <string>Enable</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="ctkCollapsibleGroupBox" name="colorBarLayerSelectionGroupBox">
+         <widget class="ctkCollapsibleGroupBox" name="scalarBarLayerSelectionGroupBox">
           <property name="title">
            <string>Layer Selection</string>
           </property>
