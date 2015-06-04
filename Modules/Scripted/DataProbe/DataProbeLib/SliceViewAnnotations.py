@@ -203,64 +203,6 @@ class SliceAnnotations(VTKObservationMixin):
 
     self.annotationsAmountGroupBox = find(window,'annotationsAmountGroupBox')[0]
     self.rulerCollapsibleButton = find(window,'rulerCollapsibleButton')[0]
-    #
-    #
-    settingsLayout = self.rulerCollapsibleButton.layout()
-    #
-    self.showHumanModelCheckBox = qt.QCheckBox('Enable')
-    settingsLayout.addWidget(self.showHumanModelCheckBox)
-
-    markerTypeWidget = qt.QWidget()
-    settingsLayout.addWidget(markerTypeWidget)
-    markerTypesLayout = qt.QHBoxLayout(markerTypeWidget)
-    markerTypeLabel = qt.QLabel('Marker Type: ')
-    markerTypesLayout.addWidget(markerTypeLabel)
-    self.cubeRadioButton = qt.QRadioButton('Cube')
-    self.cubeRadioButton.checked = True
-    markerTypesLayout.addWidget(self.cubeRadioButton)
-    self.axesRadioButton = qt.QRadioButton('Axes')
-    markerTypesLayout.addWidget(self.axesRadioButton)
-    self.humanRadioButton = qt.QRadioButton('Human')
-    markerTypesLayout.addWidget(self.humanRadioButton)
-    for radioButton in [self.cubeRadioButton, self.axesRadioButton, self.humanRadioButton]:
-      radioButton.connect('clicked()', self.updateSliceViewFromGUI)
-
-    widget = qt.QWidget()
-    settingsLayout.addWidget(widget)
-
-    #
-    parametersFormLayout = qt.QFormLayout(widget)
-    # camera zoom slider
-    self.zoomSlider = ctk.ctkSliderWidget()
-    parametersFormLayout.addRow('Camera Zoom: ', self.zoomSlider)
-    self.zoomSlider.value = 20
-    self.zoomSlider.minimum = 1
-    self.zoomSlider.maximum = 40
-    self.zoomSlider.pageStep = 1
-    self.zoomSlider.enabled = False
-    self.zoomSlider.connect('valueChanged(double)', self.zoomSliderValueChanged)
-
-    # viewport width
-    self.viewPortWidthSlider = ctk.ctkSliderWidget()
-    parametersFormLayout.addRow('View Width: ', self.viewPortWidthSlider)
-    self.viewPortWidthSlider.value = 20
-    self.viewPortWidthSlider.enabled = False
-
-    # viewport height
-    self.viewPortHeightSlider = ctk.ctkSliderWidget()
-    parametersFormLayout.addRow('View Height: ', self.viewPortHeightSlider)
-    self.viewPortHeightSlider.value = 30
-    self.viewPortHeightSlider.enabled = False
-
-
-    # connections
-    self.showHumanModelCheckBox.connect('clicked()', self.updateSliceViewFromGUI)
-    self.viewPortWidthSlider.connect('valueChanged(double)',
-        self.viewPortWidthValueChanged)
-    self.viewPortHeightSlider.connect('valueChanged(double)',
-        self.viewPortHeightValueChanged)
-    # orientation marker end
-    #
     self.rulerEnableCheckBox = find(window, 'rulerEnableCheckBox')[0]
     self.rulerEnableCheckBox.checked = self.rulerEnabled
 
@@ -275,10 +217,20 @@ class SliceAnnotations(VTKObservationMixin):
     self.rangeLabelFormatLineEdit = find(window,'rangeLabelFormatLineEdit')[0]
     self.rangeLabelFormatLineEdit.text = self.rangeLabelFormat
 
+    # Orientation Marker Controllers
+    self.orientationMarkerEnableCheckBox =  find(window,'orientationMarkerEnableCheckBox')[0]
+    self.zoomSlider =  find(window,'zoomSlider')[0]
+    self.widthSlider =  find(window,'widthSlider')[0]
+    self.heightSlider =  find(window,'heightSlider')[0]
+    self.cubeRadioButton = find(window,'cubeRadioButton')[0]
+    self.humanRadioButton = find(window,'humanRadioButton')[0]
+    self.axesRadioButton = find(window,'axesRadioButton')[0]
+
     self.restorDefaultsButton = find(window, 'restoreDefaultsButton')[0]
 
     # connections
     self.sliceViewAnnotationsCheckBox.connect('clicked()', self.onSliceViewAnnotationsCheckBox)
+
     self.topLeftCheckBox.connect('clicked()', self.onCornerTextsActivationCheckBox)
     self.topRightCheckBox.connect('clicked()', self.onCornerTextsActivationCheckBox)
     self.bottomLeftCheckBox.connect('clicked()', self.onCornerTextsActivationCheckBox)
@@ -300,6 +252,13 @@ class SliceAnnotations(VTKObservationMixin):
     self.rangeLabelFormatLineEdit.connect('editingFinished()',self.onRangeLabelFormatLineEdit)
     self.rangeLabelFormatLineEdit.connect('returnPressed()',self.onRangeLabelFormatLineEdit)
 
+    self.orientationMarkerEnableCheckBox.connect('clicked()', self.updateSliceViewFromGUI)
+    self.zoomSlider.connect('valueChanged(double)', self.zoomSliderValueChanged)
+    self.widthSlider.connect('valueChanged(double)', self.widthValueChanged)
+    self.heightSlider.connect('valueChanged(double)', self.heightValueChanged)
+    for radioButton in [self.cubeRadioButton, self.axesRadioButton, self.humanRadioButton]:
+      radioButton.connect('clicked()', self.updateSliceViewFromGUI)
+
     self.restorDefaultsButton.connect('clicked()', self.restoreDefaultValues)
 
   def onLayoutManagerDestroyed(self):
@@ -311,11 +270,11 @@ class SliceAnnotations(VTKObservationMixin):
     self.cameraPositionMultiplier = 100/self.zoomSlider.value
     self.updateSliceViewFromGUI()
 
-  def viewPortWidthValueChanged(self, value):
+  def widthValueChanged(self, value):
     self.viewPortStartWidth = 1- value/100
     self.updateSliceViewFromGUI()
 
-  def viewPortHeightValueChanged(self, value):
+  def heightValueChanged(self, value):
     self.viewPortFinishHeight= value/100
     self.updateSliceViewFromGUI()
 
@@ -489,8 +448,8 @@ class SliceAnnotations(VTKObservationMixin):
     if len(self.sliceCornerAnnotations.items()) == 0:
       self.createCornerAnnotations()
 
-    for slider in [self.zoomSlider,self.viewPortWidthSlider, self.viewPortHeightSlider]:
-      slider.enabled = self.showHumanModelCheckBox.checked
+    for slider in [self.zoomSlider,self.widthSlider, self.heightSlider]:
+      slider.enabled = self.orientationMarkerEnableCheckBox.checked
 
     for sliceViewName in self.sliceViewNames:
       cornerAnnotation = self.sliceCornerAnnotations[sliceViewName]
@@ -679,11 +638,13 @@ class SliceAnnotations(VTKObservationMixin):
       scalarBar.SetRangeLabelFormat(self.rangeLabelFormat)
     lookupTable = vtk.vtkLookupTable()
     scalarBar.SetLookupTable(lookupTable)
+    '''
     scalarBarWidget = vtk.vtkScalarBarWidget()
     scalarBarWidget.SetScalarBarActor(scalarBar)
     if vtk.VTK_MAJOR_VERSION <= 5:
       scalarBarWidget.RepositionableOff()
     self.scalarBarWidgets[sliceViewName] = scalarBarWidget
+    '''
     return scalarBar
 
   def updateCornerAnnotations(self,caller,event):
@@ -712,7 +673,7 @@ class SliceAnnotations(VTKObservationMixin):
       ren.SetViewport(self.viewPortStartWidth,0,1,self.viewPortFinishHeight)
       ren.SetLayer(1)
 
-      if self.showHumanModelCheckBox.checked:
+      if self.orientationMarkerEnableCheckBox.checked:
         if self.humanActor == None:
           #
           # Making vtk mappers and actors
@@ -888,11 +849,13 @@ class SliceAnnotations(VTKObservationMixin):
     if not sliceNode:
       return
     sliceViewName = sliceNode.GetLayoutName()
-    scalarBarWidget = self.scalarBarWidgets[sliceViewName]
+    scalarBar = self.scalarBars[sliceViewName]
+    renderer = self.renderers[sliceViewName]
+    #scalarBarWidget = self.scalarBarWidgets[sliceViewName]
     if self.scalarBarEnabled:
-      self.makeScalarBar(sliceLogic)
+      self.modifyScalarBar(sliceLogic)
     else:
-      scalarBarWidget.Off()
+      renderer.RemoveActor(scalarBar)
 
   def makeRuler(self, sliceNode):
     sliceViewName = sliceNode.GetLayoutName()
@@ -978,7 +941,7 @@ class SliceAnnotations(VTKObservationMixin):
         renderer.RemoveActor2D(textActor)
         renderer.AddActor2D(textActor)
 
-  def makeScalarBar(self, sliceLogic):
+  def modifyScalarBar(self, sliceLogic):
     sliceCompositeNode = sliceLogic.GetSliceCompositeNode()
 
     # Get the layers
@@ -991,6 +954,7 @@ class SliceAnnotations(VTKObservationMixin):
     self.currentSliceViewName = sliceViewName
 
     renderer = self.renderers[sliceViewName]
+    orientationRenderer = self.orientationMarkerRenderers[sliceViewName]
     if self.sliceViews[sliceViewName]:
       scalarBar = self.scalarBars[sliceViewName]
       scalarBar.SetTextPositionToPrecedeScalarBar()
@@ -1000,23 +964,30 @@ class SliceAnnotations(VTKObservationMixin):
       else:
         scalarBar.SetMaximumWidthInPixels(50)
 
+      renderer.SetViewport(0,0,1,1)
+      renderer.SetLayer(0)
+      if orientationRenderer != None:
+        orientationRenderer.SetLayer(1)
       renderWindow = renderer.GetRenderWindow()
       interactor = renderWindow.GetInteractor()
 
       # create the scalarBarWidget
-      scalarBarWidget = self.scalarBarWidgets[sliceViewName]
-      scalarBarWidget.SetInteractor(interactor)
+      #scalarBarWidget = self.scalarBarWidgets[sliceViewName]
+      #scalarBarWidget.SetInteractor(interactor)
+      renderer.AddActor(self.scalarBars[sliceViewName])
 
-      # Auto-Adjust
-      ## Adjusting the maximum height of the scalarbar based on view height
-      viewHeight = self.sliceViews[sliceViewName].height
-      if viewHeight > 200:
-        if self.topRight and self.dicomVolumeNode:
-          scalarBar.SetMaximumHeightInPixels(int(viewHeight/2 - 30))
-        else:
-          scalarBar.SetMaximumHeightInPixels(int(viewHeight))
+      ## Adjusting the positions
+      if self.orientationMarkerEnableCheckBox.checked:
+        scalarBar.SetPosition(0.8,0.3)
+        scalarBar.SetPosition2(0.17,0.7)
       else:
-        scalarBar.SetMaximumHeightInPixels(int(viewHeight))
+        scalarBar.SetPosition(0.8,0.1)
+        scalarBar.SetPosition2(0.17,0.9)
+      if self.topRight and self.dicomVolumeNode:
+        if self.orientationMarkerEnableCheckBox.checked:
+          scalarBar.SetPosition2(0.17,0.5)
+        else:
+          scalarBar.SetPosition2(0.17,0.7)
 
     # Get the volumes
     backgroundVolume = backgroundLayer.GetVolumeNode()
@@ -1024,12 +995,15 @@ class SliceAnnotations(VTKObservationMixin):
 
     if (backgroundVolume != None and self.scalarBarSelectedLayer == 'background'):
       self.updateScalarBarRange(sliceLogic, backgroundVolume, scalarBar, self.scalarBarSelectedLayer)
-      scalarBarWidget.On()
+      renderer.AddActor(scalarBar)
+      #scalarBarWidget.On()
     elif (foregroundVolume != None and self.scalarBarSelectedLayer == 'foreground'):
       self.updateScalarBarRange(sliceLogic, foregroundVolume, scalarBar, self.scalarBarSelectedLayer)
-      scalarBarWidget.On()
+      renderer.AddActor(scalarBar)
+      #scalarBarWidget.On()
     else:
-      scalarBarWidget.Off()
+      renderer.RemoveActor(scalarBar)
+      #scalarBarWidget.Off()
 
   def makeAnnotationText(self, sliceLogic):
     self.resetTexts()
