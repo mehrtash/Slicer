@@ -53,7 +53,7 @@
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <widget class="QCheckBox" name="topLeftActivationCheckbox">
+              <widget class="QCheckBox" name="topLeftCheckbox">
                <property name="text">
                 <string>Top Left</string>
                </property>
@@ -63,7 +63,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="topRightActivationCheckbox">
+              <widget class="QCheckBox" name="topRightCheckbox">
                <property name="text">
                 <string>Top Right</string>
                </property>
@@ -73,7 +73,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="bottomLeftActivationCheckbox">
+              <widget class="QCheckBox" name="bottomLeftCheckbox">
                <property name="text">
                 <string>Bottom Left</string>
                </property>
@@ -237,7 +237,7 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_7">
              <item>
-              <widget class="QCheckBox" name="backgroundLayerPersistenceCheckbox">
+              <widget class="QCheckBox" name="backgroundPersistenceCheckbox">
                <property name="toolTip">
                 <string>Show background volume DICOM annotations if foreground volume is non-DICOM.</string>
                </property>
