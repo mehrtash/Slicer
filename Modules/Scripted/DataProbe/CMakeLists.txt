@@ -18,6 +18,10 @@ set(MODULE_PYTHON_SCRIPTS
 set(MODULE_PYTHON_RESOURCES
   Resources/Icons/SlicerAdvancedGear-Small.png
   ${MODULE_NAME}Lib/Resources/UI/settings.ui
+  ${MODULE_NAME}Lib/Resources/Models/human.stl
+  ${MODULE_NAME}Lib/Resources/Models/rightShoe.stl
+  ${MODULE_NAME}Lib/Resources/Models/leftShoe.stl
+  ${MODULE_NAME}Lib/Resources/Models/shorts.stl
   )
 
 #-----------------------------------------------------------------------------

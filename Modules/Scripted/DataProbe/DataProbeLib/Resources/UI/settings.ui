@@ -53,7 +53,7 @@
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <widget class="QCheckBox" name="topLeftCheckbox">
+              <widget class="QCheckBox" name="topLeftCheckBox">
                <property name="text">
                 <string>Top Left</string>
                </property>
@@ -63,7 +63,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="topRightCheckbox">
+              <widget class="QCheckBox" name="topRightCheckBox">
                <property name="text">
                 <string>Top Right</string>
                </property>
@@ -73,7 +73,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="bottomLeftCheckbox">
+              <widget class="QCheckBox" name="bottomLeftCheckBox">
                <property name="text">
                 <string>Bottom Left</string>
                </property>
@@ -237,7 +237,7 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_7">
              <item>
-              <widget class="QCheckBox" name="backgroundPersistenceCheckbox">
+              <widget class="QCheckBox" name="backgroundPersistenceCheckBox">
                <property name="toolTip">
                 <string>Show background volume DICOM annotations if foreground volume is non-DICOM.</string>
                </property>
@@ -261,7 +261,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QCheckBox" name="showRulerCheckBox">
+         <widget class="QCheckBox" name="rulerEnableCheckBox">
           <property name="text">
            <string>Enable</string>
           </property>
@@ -277,7 +277,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QCheckBox" name="showScalarBarCheckBox">
+         <widget class="QCheckBox" name="scalarBarEnableCheckBox">
           <property name="text">
            <string>Enable</string>
           </property>
