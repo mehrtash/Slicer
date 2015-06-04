@@ -401,7 +401,7 @@ class SliceAnnotations(VTKObservationMixin):
     self.fontFamily = 'Times'
     self.backgroundDICOMAnnotationsPersistence = 0
     self.backgroundPersistenceCheckBox.checked = False
-    self.rulerEnablCheckBox.checked = True
+    self.rulerEnableCheckBox.checked = True
     self.rulerEnabled = 1
     self.scalarBarEnalbeCheckBox.checked = False
     self.scalarBarEnabled = 0
