@@ -77,7 +77,6 @@ class SliceAnnotations(VTKObservationMixin):
     self.annotationsDisplayAmount = 0
 
     #
-    #
     self.scene = slicer.mrmlScene
     self.layoutManager = slicer.app.layoutManager()
     self.sliceViews = {}
@@ -88,45 +87,6 @@ class SliceAnnotations(VTKObservationMixin):
     self.cube = None
     self.axes = None
     self.humanActor = None
-
-    #
-    # Setting 3D models
-    #
-
-    # Module's Path
-    # TODO: Update if moved to another module
-    modulePath= slicer.modules.dataprobe.path.replace("DataProbe.py","")
-
-    # Test whether the model is already loaded into the scene or not.
-    # (Useful on Reload)
-    nodes = self.scene.GetNodesByName('human')
-    if nodes.GetNumberOfItems() == 0 :
-      modelFiles = [ "human.stl","shorts.stl", "leftShoe.stl", "rightShoe.stl"]
-      modelPaths = [modulePath + "DataProbeLib/Resources/Models/"+ modelFile for modelFile in modelFiles]
-      for modelPath in modelPaths:
-        successfulLoad = slicer.util.loadModel(modelPath)
-        if successfulLoad != True:
-          print 'Warning: Could not load model %s' %modelPath
-
-    modelNodes = []
-    # Human node
-    self.humanNode = self.scene.GetNodesByName('human').GetItemAsObject(0)
-    modelNodes.append(self.humanNode)
-    # Shorts node
-    self.shortsNode = self.scene.GetNodesByName('shorts').GetItemAsObject(0)
-    modelNodes.append(self.shortsNode)
-    # Left shoe node
-    self.leftShoeNode = self.scene.GetNodesByName('leftShoe').GetItemAsObject(0)
-    modelNodes.append(self.leftShoeNode)
-    # Right shoe node
-    self.rightShoeNode = self.scene.GetNodesByName('rightShoe').GetItemAsObject(0)
-    modelNodes.append(self.rightShoeNode)
-
-    for node in modelNodes:
-      node.HideFromEditorsOn()
-      node.SetDisplayVisibility(False)
-    #
-    #
 
     # If there are no user settings load defaults
     settings = qt.QSettings()
@@ -230,6 +190,12 @@ class SliceAnnotations(VTKObservationMixin):
     self.cubeRadioButton = find(window,'cubeRadioButton')[0]
     self.humanRadioButton = find(window,'humanRadioButton')[0]
     self.axesRadioButton = find(window,'axesRadioButton')[0]
+    if self.orientationMarkerType == 'Cube':
+      self.cubeRadioButton.enabled = True
+    elif self.orientationMarkerType == 'Human':
+      self.humanRadioButton.enabled = True
+    else:
+      self.axesRadioButton.enabled = True
 
     self.restorDefaultsButton = find(window, 'restoreDefaultsButton')[0]
 
@@ -702,114 +668,46 @@ class SliceAnnotations(VTKObservationMixin):
       ren.SetLayer(1)
 
       if self.orientationMarkerEnabled:
-        if self.humanActor == None:
-          #
-          # Making vtk mappers and actors
-          #
-          # Mappers
-          humanMapper = vtk.vtkPolyDataMapper()
-          if vtk.VTK_MAJOR_VERSION <= 5:
-            humanMapper.SetInput(self.humanNode.GetPolyData())
-          else:
-            humanMapper.SetInputData(self.humanNode.GetPolyData())
-
-          shortsMapper = vtk.vtkPolyDataMapper()
-          if vtk.VTK_MAJOR_VERSION <= 5:
-            shortsMapper.SetInput(self.shortsNode.GetPolyData())
-          else:
-            shortsMapper.SetInputData(self.shortsNode.GetPolyData())
-
-          leftShoeMapper = vtk.vtkPolyDataMapper()
-          if vtk.VTK_MAJOR_VERSION <= 5:
-            leftShoeMapper.SetInput(self.leftShoeNode.GetPolyData())
-          else:
-            leftShoeMapper.SetInputData(self.leftShoeNode.GetPolyData())
-
-          rightShoeMapper = vtk.vtkPolyDataMapper()
-          if vtk.VTK_MAJOR_VERSION <= 5:
-            rightShoeMapper.SetInput(self.rightShoeNode.GetPolyData())
-          else:
-            rightShoeMapper.SetInputData(self.rightShoeNode.GetPolyData())
-
-          # Actors
-          humanModelScale = 0.01
-          self.humanActor = vtk.vtkActor()
-          self.humanActor.SetMapper(humanMapper)
-          '''
-          The human skin tone (color) was chosen based on the unicode.org recommendations:
-          It was chosen as non-realistic skin tone with RGG: #FFCC22
-          Source: http://unicode.org/reports/tr51/
-          '''
-          self.humanActor.GetProperty().SetColor(255/256,204/256,34/256)
-          self.humanActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
-
-          self.shortsActor = vtk.vtkActor()
-          self.shortsActor.SetMapper(shortsMapper)
-          self.shortsActor.GetProperty().SetColor(0,0,1)
-          self.shortsActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
-
-          self.leftShoeActor = vtk.vtkActor()
-          self.leftShoeActor.SetMapper(leftShoeMapper)
-          self.leftShoeActor.GetProperty().SetColor(1,0,0)
-          self.leftShoeActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
-
-          self.rightShoeActor = vtk.vtkActor()
-          self.rightShoeActor.SetMapper(rightShoeMapper)
-          self.rightShoeActor.GetProperty().SetColor(0,1,0)
-          self.rightShoeActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
-
-        if self.cube == None:
-          self.cube = vtk.vtkAnnotatedCubeActor()
-          self.cube.SetXPlusFaceText('R')
-          self.cube.SetXMinusFaceText('L')
-          self.cube.SetYMinusFaceText('A')
-          self.cube.SetYPlusFaceText('P')
-          self.cube.SetZMinusFaceText('I')
-          self.cube.SetZPlusFaceText('S')
-          self.cube.SetZFaceTextRotation(90)
-          self.cube.GetTextEdgesProperty().SetColor(0.95,0.95,0.95)
-          self.cube.GetTextEdgesProperty().SetLineWidth(2)
-          self.cube.GetCubeProperty().SetColor(0.15,0.15,0.15)
-
-        if self.axes == None:
-          self.axes = vtk.vtkAxesActor()
-          self.axes.SetXAxisLabelText('R')
-          self.axes.SetYAxisLabelText('A')
-          self.axes.SetZAxisLabelText('S')
-          transform = vtk.vtkTransform()
-          transform.Translate(0,0,0)
-          self.axes.SetUserTransform(transform)
-
         # Add actors to renderer
         if self.orientationMarkerType == 'Cube':
+          if self.cube == None:
+            self.createCubeOrientationModel()
           ren.AddActor(self.cube)
-          ren.RemoveActor(self.humanActor)
-          ren.RemoveActor(self.shortsActor)
-          ren.RemoveActor(self.leftShoeActor)
-          ren.RemoveActor(self.rightShoeActor)
-          ren.RemoveActor(self.axes)
+          if self.humanActor != None:
+            ren.RemoveActor(self.humanActor)
+            ren.RemoveActor(self.shortsActor)
+            ren.RemoveActor(self.leftShoeActor)
+            ren.RemoveActor(self.rightShoeActor)
+          if self.axes != None:
+            ren.RemoveActor(self.axes)
 
         elif self.orientationMarkerType == 'Human':
+          if self.humanActor == None:
+            self.createHumanOrientationModel()
           ren.AddActor(self.humanActor)
           ren.AddActor(self.shortsActor)
           ren.AddActor(self.leftShoeActor)
           ren.AddActor(self.rightShoeActor)
-          ren.RemoveActor(self.cube)
-          ren.RemoveActor(self.axes)
+          if self.cube!= None:
+            ren.RemoveActor(self.cube)
+          if self.axes != None:
+            ren.RemoveActor(self.axes)
 
         elif self.orientationMarkerType == 'Axes':
+          if self.axes == None:
+            self.createAxesOrientationModel()
           ren.AddActor(self.axes)
-          ren.RemoveActor(self.humanActor)
-          ren.RemoveActor(self.shortsActor)
-          ren.RemoveActor(self.leftShoeActor)
-          ren.RemoveActor(self.rightShoeActor)
-          ren.RemoveActor(self.cube)
+          if self.humanActor != None:
+            ren.RemoveActor(self.humanActor)
+            ren.RemoveActor(self.shortsActor)
+            ren.RemoveActor(self.leftShoeActor)
+            ren.RemoveActor(self.rightShoeActor)
+          if self.cube!= None:
+            ren.RemoveActor(self.cube)
 
         # Calculate the camera position and viewup based on XYToRAS matrix
         camera = vtk.vtkCamera()
-
         m = sliceNode.GetSliceToRAS()
-
         v = np.array([[m.GetElement(0,0),m.GetElement(0,1),m.GetElement(0,2)],
             [m.GetElement(1,0),m.GetElement(1,1),m.GetElement(1,2)],
             [m.GetElement(2,0),m.GetElement(2,1),m.GetElement(2,2)]])
@@ -850,6 +748,115 @@ class SliceAnnotations(VTKObservationMixin):
 
       # Refresh view
       self.sliceViews[sliceViewName].scheduleRender()
+
+  def createCubeOrientationModel(self):
+    self.cube = vtk.vtkAnnotatedCubeActor()
+    self.cube.SetXPlusFaceText('R')
+    self.cube.SetXMinusFaceText('L')
+    self.cube.SetYMinusFaceText('P')
+    self.cube.SetYPlusFaceText('A')
+    self.cube.SetZMinusFaceText('I')
+    self.cube.SetZPlusFaceText('S')
+    self.cube.SetZFaceTextRotation(90)
+    self.cube.GetTextEdgesProperty().SetColor(0.95,0.95,0.95)
+    self.cube.GetTextEdgesProperty().SetLineWidth(2)
+    self.cube.GetCubeProperty().SetColor(0.15,0.15,0.15)
+
+  def createHumanOrientationModel(self):
+    # Module's Path
+    modulePath= slicer.modules.dataprobe.path.replace("DataProbe.py","")
+
+    # Test whether the model is already loaded into the scene or not.
+    nodes = self.scene.GetNodesByName('leftShoe')
+    if nodes.GetNumberOfItems() == 0 :
+      modelFiles = [ "human.stl","shorts.stl", "leftShoe.stl", "rightShoe.stl"]
+      modelPaths = [modulePath + "DataProbeLib/Resources/Models/"+ modelFile for modelFile in modelFiles]
+      for modelPath in modelPaths:
+        successfulLoad = slicer.util.loadModel(modelPath)
+        if successfulLoad != True:
+          print 'Warning: Could not load model %s' %modelPath
+
+    modelNodes = []
+    # Human node
+    self.humanNode = self.scene.GetNodesByName('human').GetItemAsObject(0)
+    modelNodes.append(self.humanNode)
+    # Shorts node
+    self.shortsNode = self.scene.GetNodesByName('shorts').GetItemAsObject(0)
+    modelNodes.append(self.shortsNode)
+    # Left shoe node
+    self.leftShoeNode = self.scene.GetNodesByName('leftShoe').GetItemAsObject(0)
+    modelNodes.append(self.leftShoeNode)
+    # Right shoe node
+    self.rightShoeNode = self.scene.GetNodesByName('rightShoe').GetItemAsObject(0)
+    modelNodes.append(self.rightShoeNode)
+
+    for node in modelNodes:
+      node.HideFromEditorsOn()
+      node.SetDisplayVisibility(False)
+
+    # Mappers
+    humanMapper = vtk.vtkPolyDataMapper()
+    if vtk.VTK_MAJOR_VERSION <= 5:
+      humanMapper.SetInput(self.humanNode.GetPolyData())
+    else:
+      humanMapper.SetInputData(self.humanNode.GetPolyData())
+
+    shortsMapper = vtk.vtkPolyDataMapper()
+    if vtk.VTK_MAJOR_VERSION <= 5:
+      shortsMapper.SetInput(self.shortsNode.GetPolyData())
+    else:
+      shortsMapper.SetInputData(self.shortsNode.GetPolyData())
+
+    leftShoeMapper = vtk.vtkPolyDataMapper()
+    if vtk.VTK_MAJOR_VERSION <= 5:
+      leftShoeMapper.SetInput(self.leftShoeNode.GetPolyData())
+    else:
+      leftShoeMapper.SetInputData(self.leftShoeNode.GetPolyData())
+
+    rightShoeMapper = vtk.vtkPolyDataMapper()
+    if vtk.VTK_MAJOR_VERSION <= 5:
+      rightShoeMapper.SetInput(self.rightShoeNode.GetPolyData())
+    else:
+      rightShoeMapper.SetInputData(self.rightShoeNode.GetPolyData())
+
+    # Actors
+    humanModelScale = 0.01
+    self.humanActor = vtk.vtkActor()
+    self.humanActor.SetMapper(humanMapper)
+
+    '''
+    The human skin tone (color) was chosen based on the unicode.org recommendations:
+    It was chosen as non-realistic skin tone with RGG: #FFCC22
+    Source: http://unicode.org/reports/tr51/
+    '''
+    self.humanActor.GetProperty().SetColor(255/256,204/256,34/256)
+    self.humanActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
+
+    self.shortsActor = vtk.vtkActor()
+    self.shortsActor.SetMapper(shortsMapper)
+    self.shortsActor.GetProperty().SetColor(0,0,1)
+    self.shortsActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
+
+    self.leftShoeActor = vtk.vtkActor()
+    self.leftShoeActor.SetMapper(leftShoeMapper)
+    self.leftShoeActor.GetProperty().SetColor(1,0,0)
+    self.leftShoeActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
+
+    self.rightShoeActor = vtk.vtkActor()
+    self.rightShoeActor.SetMapper(rightShoeMapper)
+    self.rightShoeActor.GetProperty().SetColor(0,1,0)
+    self.rightShoeActor.SetScale(humanModelScale,humanModelScale,humanModelScale)
+
+
+  def createAxesOrientationModel(self):
+    self.axes = vtk.vtkAxesActor()
+    self.axes.SetXAxisLabelText('R')
+    self.axes.SetYAxisLabelText('A')
+    self.axes.SetZAxisLabelText('S')
+    transform = vtk.vtkTransform()
+    transform.Translate(0,0,0)
+    self.axes.SetUserTransform(transform)
+
 
   def sliceLogicModifiedEvent(self, caller,event):
     self.updateLayersAnnotation(caller)
@@ -1011,7 +1018,7 @@ class SliceAnnotations(VTKObservationMixin):
         scalarBar.SetPosition2(0.17,0.7)
       else:
         scalarBar.SetPosition(0.8,0.1)
-        scalarBar.SetPosition2(0.17,0.9)
+        scalarBar.SetPosition2(0.17,0.8)
       if self.topRight and self.dicomVolumeNode:
         if self.orientationMarkerEnabled:
           scalarBar.SetPosition2(0.17,0.5)
