@@ -247,6 +247,7 @@ class DICOMWidget:
     # XXX Slicer 4.5 - Remove these. Here only for backward compatibility.
     self.dicomBrowser = self.detailsPopup.dicomBrowser
     self.tables = self.detailsPopup.tables
+    self.seriesTableView = self.detailsPopup.seriesTableView
 
     # connect to the 'Show DICOM Browser' button
     self.showBrowserButton = qt.QPushButton('Show DICOM Browser')
@@ -266,6 +267,15 @@ class DICOMWidget:
       slicer.dicomListener.fileToBeAddedCallback = self.onListenerToAddFile
       slicer.dicomListener.fileAddedCallback = self.onListenerAddedFile
 
+    self.contextMenu = qt.QMenu(self.seriesTableView)
+    print 'context menu: ', self.contextMenu
+    self.deleteAction = qt.QAction("Delete", self.contextMenu)
+    self.contextMenu.addAction(self.deleteAction)
+    self.deleteAction.enabled = True
+    self.seriesTableView.setContextMenuPolicy(3)
+    self.seriesTableView.connect('customContextMenuRequested(QPoint)', self.onTreeContextMenuRequested)
+    self.contextMenu.connect('triggered(QAction*)', self.onContextMenuTriggered)
+
     slicer.dicomDatabase.connect('databaseChanged()', self.onDatabaseChanged)
 
     # the recent activity frame
@@ -281,6 +291,18 @@ class DICOMWidget:
 
     # Add spacer to layout
     self.layout.addStretch(1)
+  def onTreeContextMenuRequested(self,pos):
+    # TODO: populate the context menu
+    print 'on tree context menu'
+    index = self.seriesTableView.indexAt(pos)
+    self.selection = index.sibling(index.row(), 0)
+    self.contextMenu.popup(self.seriesTableView.mapToGlobal(pos))
+
+  def onContextMenuTriggered(self,action):
+    print 'on context menu triggered'
+    if action == self.deleteAction:
+      print 'delete action'
+      self.dicomBrowser.onRemoveAction()
 
   def onDatabaseChanged(self):
     """Use this because to update the view in response to things
